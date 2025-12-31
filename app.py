@@ -11,8 +11,6 @@ if "points" not in st.session_state:
 if "image_data" not in st.session_state:
     st.session_state["image_data"] = None
 
-st.title("📍 Cartographie de Précision (0-100)")
-
 # --- BARRE LATÉRALE ---
 with st.sidebar:
     st.header("⚙️ Configuration")
@@ -69,9 +67,7 @@ else:
             cx, cy = res['x'], res['y']
             
             # --- CALCUL DES COORDONNÉES (0 à 100) ---
-            # X: 0 à gauche, 100 à droite
             scaled_x = (cx / display_w) * 100
-            # Y: 0 en BAS, 100 en HAUT (on inverse le sens natif de l'image)
             scaled_y = (1 - (cy / display_h)) * 100
 
             # --- LOGIQUE DES COLONNES ---
@@ -84,7 +80,8 @@ else:
             else:
                 v_type = "Segment"
                 v_shape = (nb_points // 2) + 1
-                v_pt = "Départ" if nb_points % 2 == 0 else "Arrivée"
+                # Modification ici : Départ -> 0, Arrivée -> 1
+                v_pt = 0 if nb_points % 2 == 0 else 1
 
             new_entry = {
                 "Shape": v_shape,
@@ -106,7 +103,7 @@ else:
         if st.session_state["points"]:
             df = pd.DataFrame(st.session_state["points"])
             
-            # On rend le tableau éditable pour la colonne Commentaire
+            # Affichage éditable
             edited_df = st.data_editor(
                 df[["Shape", "Type", "Point", "X", "Y", "Commentaire"]],
                 hide_index=True,
@@ -114,7 +111,7 @@ else:
                 key="editor"
             )
             
-            # Mise à jour des commentaires dans le session_state
+            # Mise à jour des commentaires
             if not edited_df.equals(df[["Shape", "Type", "Point", "X", "Y", "Commentaire"]]):
                  for idx, row in edited_df.iterrows():
                      st.session_state["points"][idx]["Commentaire"] = row["Commentaire"]
